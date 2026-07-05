@@ -61,9 +61,9 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
 
     // Generate token
     const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      jwtSecret,
-      { expiresIn: jwtExpiresIn }
+      { userId: user.id, email: user.email, role: user.role } as any,
+      jwtSecret as any,
+      { expiresIn: jwtExpiresIn as any } as any
     );
 
     res.status(201).json({
@@ -93,9 +93,9 @@ router.post('/login', validate(loginSchema), async (req: Request, res: Response,
 
     // Generate token
     const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      jwtSecret,
-      { expiresIn: jwtExpiresIn }
+      { userId: user.id, email: user.email, role: user.role } as any,
+      jwtSecret as any,
+      { expiresIn: jwtExpiresIn as any } as any
     );
 
     res.json({
