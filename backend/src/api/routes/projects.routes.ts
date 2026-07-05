@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, AuthRequest } from '../../middleware/auth';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-router.get('/', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/', authenticate, async (_req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const projects = await prisma.project.findMany({
       select: {

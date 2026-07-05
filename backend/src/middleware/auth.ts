@@ -25,7 +25,7 @@ export const authenticate = async (
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const decoded = jwt.verify(token, config.jwt.secret) as {
+    const decoded = jwt.verify(token, config.jwt.secret as string) as {
       userId: string;
       email: string;
       role: string;
@@ -41,7 +41,7 @@ export const authenticate = async (
     }
 
     req.user = user;
-    next();
+    return next();
   } catch (error) {
     return res.status(401).json({ error: 'Invalid token' });
   }
@@ -57,6 +57,6 @@ export const authorize = (...roles: string[]) => {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
-    next();
+    return next();
   };
 };

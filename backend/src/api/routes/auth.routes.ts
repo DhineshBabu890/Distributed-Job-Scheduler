@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
@@ -9,6 +9,9 @@ import { AppError } from '../../middleware/errorHandler';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+const jwtSecret = config.jwt.secret as string;
+const jwtExpiresIn = config.jwt.expiresIn as string | number;
 
 const registerSchema = z.object({
   body: z.object({
@@ -26,7 +29,7 @@ const loginSchema = z.object({
   }),
 });
 
-router.post('/register', validate(registerSchema), async (req, res, next) => {
+router.post('/register', validate(registerSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password, firstName, lastName } = req.body;
 
@@ -59,8 +62,8 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
     // Generate token
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      config.jwt.secret,
-      { expiresIn: config.jwt.expiresIn }
+      jwtSecret,
+      { expiresIn: jwtExpiresIn }
     );
 
     res.status(201).json({
@@ -72,7 +75,7 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
   }
 });
 
-router.post('/login', validate(loginSchema), async (req, res, next) => {
+router.post('/login', validate(loginSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
 
@@ -91,8 +94,8 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
     // Generate token
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      config.jwt.secret,
-      { expiresIn: config.jwt.expiresIn }
+      jwtSecret,
+      { expiresIn: jwtExpiresIn }
     );
 
     res.json({
@@ -110,14 +113,14 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
   }
 });
 
-router.get('/me', async (req, res, next) => {
+router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) {
       throw new AppError('Authentication required', 401);
     }
 
-    const decoded = jwt.verify(token, config.jwt.secret) as { userId: string };
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string };
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { validate } from '../../middleware/validation';
@@ -7,6 +7,12 @@ import { AppError } from '../../middleware/errorHandler';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+type QueueRequest = AuthRequest & {
+  params: Record<string, string>;
+  query: Record<string, unknown>;
+  body: any;
+};
 
 const createQueueSchema = z.object({
   body: z.object({
@@ -80,7 +86,7 @@ router.post(
   '/',
   authenticate,
   validate(createQueueSchema),
-  async (req: AuthRequest, res, next) => {
+  async (req: QueueRequest, res: Response, next: NextFunction) => {
     try {
       const resolvedProjectId = await resolveOrCreateProjectId(req.body.projectId);
       const queue = await prisma.queue.create({
@@ -105,7 +111,7 @@ router.post(
   }
 );
 
-router.get('/', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/', authenticate, async (req: QueueRequest, res: Response, next: NextFunction) => {
   try {
     const { projectId } = req.query;
 
@@ -125,7 +131,7 @@ router.get('/', authenticate, async (req: AuthRequest, res, next) => {
   }
 });
 
-router.get('/:id', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/:id', authenticate, async (req: QueueRequest, res: Response, next: NextFunction) => {
   try {
     const queue = await prisma.queue.findUnique({
       where: { id: req.params.id },
@@ -150,7 +156,7 @@ router.patch(
   '/:id',
   authenticate,
   validate(updateQueueSchema),
-  async (req: AuthRequest, res, next) => {
+  async (req: QueueRequest, res: Response, next: NextFunction) => {
     try {
       const queue = await prisma.queue.update({
         where: { id: req.params.id },
@@ -173,7 +179,7 @@ router.patch(
   }
 );
 
-router.delete('/:id', authenticate, async (req: AuthRequest, res, next) => {
+router.delete('/:id', authenticate, async (req: QueueRequest, res: Response, next: NextFunction) => {
   try {
     await prisma.queue.delete({
       where: { id: req.params.id },
@@ -189,7 +195,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res, next) => {
   }
 });
 
-router.post('/:id/pause', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/:id/pause', authenticate, async (req: QueueRequest, res: Response, next: NextFunction) => {
   try {
     const queue = await prisma.queue.update({
       where: { id: req.params.id },
@@ -202,7 +208,7 @@ router.post('/:id/pause', authenticate, async (req: AuthRequest, res, next) => {
   }
 });
 
-router.post('/:id/resume', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/:id/resume', authenticate, async (req: QueueRequest, res: Response, next: NextFunction) => {
   try {
     const queue = await prisma.queue.update({
       where: { id: req.params.id },
@@ -215,7 +221,7 @@ router.post('/:id/resume', authenticate, async (req: AuthRequest, res, next) => 
   }
 });
 
-router.get('/:id/stats', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/:id/stats', authenticate, async (req: QueueRequest, res: Response, next: NextFunction) => {
   try {
     const stats = await prisma.queueStats.findUnique({
       where: { queueId: req.params.id },
