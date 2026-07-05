@@ -30,6 +30,13 @@ const io = new Server(server, {
 socketService.init(io);
 
 // Middleware
+// Middleware
+
+console.log("================================");
+console.log("ENV CORS_ORIGIN =", process.env.CORS_ORIGIN);
+console.log("CONFIG CORS =", config.cors);
+console.log("================================");
+
 app.use(helmet());
 app.use(cors(config.cors));
 app.use(compression());
