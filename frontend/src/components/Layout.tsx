@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  Avatar, Typography, Tooltip, IconButton, Menu, MenuItem,
+  Avatar, Typography, Tooltip, IconButton,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -30,7 +30,6 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [time, setTime] = useState(new Date());
   const queryClient = useQueryClient();
 

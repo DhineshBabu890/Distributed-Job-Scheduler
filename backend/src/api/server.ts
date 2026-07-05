@@ -10,6 +10,7 @@ import config from '../config';
 import logger from '../utils/logger';
 import { errorHandler, notFound } from '../middleware/errorHandler';
 import socketService from '../services/socketService';
+import JobWorker from '../workers/worker';
 
 // Routes
 import authRoutes from './routes/auth.routes';
@@ -21,10 +22,11 @@ import workersRoutes from './routes/workers.routes';
 const app = express();
 const server = http.createServer(app);
 
-// WebSocket server for real-time updates
+// WebSocket server
 const io = new Server(server, {
   cors: config.cors,
 });
+
 socketService.init(io);
 
 // Middleware
@@ -33,17 +35,20 @@ app.use(cors(config.cors));
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('combined', {
-  stream: {
-    write: (message) => logger.info(message.trim()),
-  },
-}));
 
-// Rate limiting
+app.use(
+  morgan('combined', {
+    stream: {
+      write: (message) => logger.info(message.trim()),
+    },
+  })
+);
+
+// Rate Limiting
 const limiter = rateLimit(config.rateLimit);
-app.use('/api/', limiter);
+app.use('/api', limiter);
 
-// Health check
+// Health Check
 app.get('/health', (_req, res) => {
   res.json({
     status: 'healthy',
@@ -59,44 +64,65 @@ app.use('/api/queues', queuesRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/workers', workersRoutes);
 
-// WebSocket events
+// WebSocket Events
 io.on('connection', (socket) => {
   logger.info('Client connected', { socketId: socket.id });
 
   socket.on('subscribe:queue', (queueId: string) => {
     socket.join(`queue:${queueId}`);
-    logger.debug('Client subscribed to queue', { queueId, socketId: socket.id });
   });
 
   socket.on('unsubscribe:queue', (queueId: string) => {
     socket.leave(`queue:${queueId}`);
-    logger.debug('Client unsubscribed from queue', { queueId, socketId: socket.id });
   });
 
   socket.on('disconnect', () => {
-    logger.info('Client disconnected', { socketId: socket.id });
+    logger.info('Client disconnected', {
+      socketId: socket.id,
+    });
   });
 });
 
-// Export io for use in other modules
+// Export io
 export { io };
 
-// Error handlers
+// Error Handlers
 app.use(notFound);
 app.use(errorHandler);
 
-// Start server
+// ===============================
+// START SERVER + WORKER
+// ===============================
+
 const PORT = config.port;
-server.listen(PORT, () => {
+
+server.listen(PORT, async () => {
   logger.info(`Server started on port ${PORT}`);
   logger.info(`Environment: ${config.env}`);
+
+  try {
+    const raw = process.env.WORKER_QUEUES?.trim();
+
+    const queueIds = raw
+      ? raw.split(',').map((q) => q.trim()).filter(Boolean)
+      : [];
+
+    const worker = new JobWorker(queueIds);
+
+    await worker.start();
+
+    logger.info('Background Worker Started Successfully');
+  } catch (error) {
+    logger.error('Failed to start worker', error);
+  }
 });
 
-// Graceful shutdown
+// Graceful Shutdown
 process.on('SIGTERM', () => {
-  logger.info('SIGTERM signal received: closing HTTP server');
+  logger.info('SIGTERM received');
+
   server.close(() => {
-    logger.info('HTTP server closed');
+    logger.info('HTTP Server Closed');
     process.exit(0);
   });
 });
