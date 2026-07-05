@@ -1,0 +1,39 @@
+{
+  "name": "distributed-job-scheduler",
+  "version": "1.0.0",
+  "description": "Production-grade distributed job scheduling platform",
+  "main": "index.js",
+  "scripts": {
+    "dev:api": "concurrently \"npm run dev -w backend\" \"npm run dev -w worker\"",
+    "dev:worker": "npm run dev:worker -w backend",
+    "dev:client": "npm run dev -w frontend",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
+    "build": "npm run build --workspaces",
+    "build:api": "npm run build -w backend",
+    "build:client": "npm run build -w frontend",
+    "start": "npm run start -w backend",
+    "test": "npm run test --workspaces",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "db:studio": "npm run db:studio -w backend",
+    "lint": "npm run lint --workspaces",
+    "format": "prettier --write \"**/*.{js,ts,tsx,json,md}\""
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "keywords": [
+    "job-scheduler",
+    "distributed-systems",
+    "background-jobs",
+    "task-queue"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.2.5"
+  }
+}
