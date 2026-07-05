@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Table, TableBody, TableCell, TableHead, TableRow,
-  Chip, IconButton, Alert, FormControl, InputLabel, Select, MenuItem, Tooltip,
+  TextField, IconButton, Alert, FormControl, InputLabel, Select, MenuItem,
+  Tooltip, Grid, LinearProgress,
 } from '@mui/material';
 import { Add, PlayArrow, Pause, LayersOutlined } from '@mui/icons-material';
 import { queuesApi, projectsApi } from '../services/api';
+
+const CARD_COLORS = ['#00d4aa', '#7c3aed', '#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#06b6d4', '#ec4899'];
 
 const defaultForm = { projectId: '', name: '', description: '', priority: 5, concurrencyLimit: 10, rateLimit: 100 };
 
@@ -50,17 +52,20 @@ export default function QueuesPage() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
         <Box>
           <Typography variant="h4" sx={{
-            background: 'linear-gradient(90deg,#e2e8f0,#94a3b8)',
+            background: 'linear-gradient(135deg, #00d4aa, #7c3aed)',
             backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>Queues</Typography>
-          <Typography sx={{ color: '#475569', fontSize: '0.875rem', mt: 0.5 }}>
+          <Typography sx={{ color: '#334155', fontSize: '0.85rem', mt: 0.5 }}>
             {queues.length} queue{queues.length !== 1 ? 's' : ''} configured
           </Typography>
         </Box>
         <Button
           variant="contained" startIcon={<Add />}
           onClick={() => setOpen(true)}
-          sx={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', boxShadow: '0 4px 16px rgba(124,58,237,0.4)' }}
+          sx={{
+            background: 'linear-gradient(135deg, #00d4aa, #7c3aed)', borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0,212,170,0.3)',
+          }}
         >
           New Queue
         </Button>
@@ -68,97 +73,153 @@ export default function QueuesPage() {
 
       {queues.length === 0 && !isLoading ? (
         <Box sx={{
-          py: 8, textAlign: 'center',
-          background: 'rgba(13,17,32,0.5)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)',
+          py: 10, textAlign: 'center', borderRadius: '20px',
+          background: 'rgba(10,14,28,0.6)',
+          border: '1px dashed rgba(255,255,255,0.08)',
+          animation: 'fadeInUp 0.4s ease both',
         }}>
-          <LayersOutlined sx={{ fontSize: 48, color: '#334155', mb: 2 }} />
-          <Typography sx={{ color: '#475569' }}>No queues yet. Create your first queue to get started.</Typography>
+          <LayersOutlined sx={{ fontSize: 56, color: '#1e293b', mb: 2 }} />
+          <Typography sx={{ color: '#334155', fontSize: '0.9rem' }}>No queues yet. Create your first queue to get started.</Typography>
         </Box>
       ) : (
-        <Box sx={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(13,17,32,0.85)' }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                {['Queue Name', 'Description', 'Priority', 'Concurrency', 'Status', 'Stats', 'Actions'].map(h => (
-                  <TableCell key={h}>{h}</TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {queues.map((queue: any) => (
-                <TableRow key={queue.id}>
-                  <TableCell>
+        <Grid container spacing={2.5}>
+          {queues.map((queue: any, i: number) => {
+            const color = CARD_COLORS[i % CARD_COLORS.length];
+            const s = queue.statistics || {};
+            const total = s.totalJobs || 0;
+            const completed = s.completedJobs || 0;
+            const running = s.runningJobs || 0;
+            const failed = s.failedJobs || 0;
+            const usagePct = queue.concurrencyLimit > 0 ? Math.min((running / queue.concurrencyLimit) * 100, 100) : 0;
+
+            return (
+              <Grid item xs={12} sm={6} lg={4} key={queue.id}>
+                <Box sx={{
+                  p: 3, borderRadius: '18px',
+                  background: 'rgba(10,14,28,0.9)',
+                  border: `1px solid ${color}18`,
+                  backdropFilter: 'blur(12px)',
+                  position: 'relative', overflow: 'hidden',
+                  transition: 'all 0.25s ease',
+                  animation: `fadeInUp 0.4s ease ${i * 0.06}s both`,
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: `0 16px 48px ${color}20`,
+                    borderColor: `${color}35`,
+                  },
+                }}>
+                  {/* Top accent */}
+                  <Box sx={{
+                    position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+                    background: `linear-gradient(90deg, ${color}, transparent)`,
+                  }} />
+
+                  {/* Header */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Box sx={{
-                        width: 8, height: 8, borderRadius: '50%',
+                        width: 10, height: 10, borderRadius: '50%',
                         background: queue.isPaused ? '#f59e0b' : '#10b981',
-                        boxShadow: queue.isPaused ? '0 0 6px #f59e0b' : '0 0 6px #10b981',
+                        boxShadow: `0 0 8px ${queue.isPaused ? '#f59e0b' : '#10b981'}60`,
                       }} />
-                      <Typography sx={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.875rem' }}>
-                        {queue.name}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ color: '#64748b', fontSize: '0.8rem' }}>{queue.description || '—'}</TableCell>
-                  <TableCell>
-                    <Box sx={{
-                      display: 'inline-flex', px: 1.5, py: 0.3, borderRadius: 6,
-                      background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)',
-                      color: '#9d5ff0', fontWeight: 700, fontSize: '0.8rem',
-                    }}>{queue.priority}</Box>
-                  </TableCell>
-                  <TableCell sx={{ color: '#94a3b8', fontSize: '0.875rem' }}>{queue.concurrencyLimit}</TableCell>
-                  <TableCell>
-                    <Chip
-                      size="small"
-                      label={queue.isPaused ? 'Paused' : 'Active'}
-                      sx={{
-                        fontWeight: 700, borderRadius: '6px',
-                        background: queue.isPaused ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)',
-                        border: `1px solid ${queue.isPaused ? 'rgba(245,158,11,0.35)' : 'rgba(16,185,129,0.35)'}`,
-                        color: queue.isPaused ? '#f59e0b' : '#10b981',
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {queue.statistics ? (
-                      <Box sx={{ fontSize: '0.78rem', display: 'flex', flexDirection: 'column', gap: 0.3 }}>
-                        <Box sx={{ color: '#94a3b8' }}>Queued: <strong style={{ color: '#e2e8f0' }}>{queue.statistics.queuedJobs}</strong></Box>
-                        <Box sx={{ color: '#94a3b8' }}>Running: <strong style={{ color: '#06b6d4' }}>{queue.statistics.runningJobs}</strong></Box>
-                        <Box sx={{ color: '#94a3b8' }}>Done: <strong style={{ color: '#10b981' }}>{queue.statistics.completedJobs}</strong></Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 700, color: '#e2e8f0', fontSize: '0.95rem' }}>
+                          {queue.name}
+                        </Typography>
+                        <Typography sx={{ color: '#475569', fontSize: '0.72rem' }}>
+                          {queue.description || 'No description'}
+                        </Typography>
                       </Box>
-                    ) : '—'}
-                  </TableCell>
-                  <TableCell>
+                    </Box>
                     <Tooltip title={queue.isPaused ? 'Resume queue' : 'Pause queue'}>
                       <IconButton
                         size="small"
                         onClick={() => queue.isPaused ? resumeMutation.mutate(queue.id) : pauseMutation.mutate(queue.id)}
                         sx={{
                           color: queue.isPaused ? '#10b981' : '#f59e0b',
-                          background: queue.isPaused ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
-                          borderRadius: '8px', p: 0.8,
-                          '&:hover': { background: queue.isPaused ? 'rgba(16,185,129,0.24)' : 'rgba(245,158,11,0.24)' },
+                          background: queue.isPaused ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
+                          borderRadius: '10px', p: 0.8,
+                          border: `1px solid ${queue.isPaused ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'}`,
+                          '&:hover': {
+                            background: queue.isPaused ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)',
+                          },
                         }}
                       >
                         {queue.isPaused ? <PlayArrow fontSize="small" /> : <Pause fontSize="small" />}
                       </IconButton>
                     </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Box>
+                  </Box>
+
+                  {/* Stats row */}
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1, mb: 2.5 }}>
+                    {[
+                      { label: 'Total', value: total, clr: '#94a3b8' },
+                      { label: 'Done', value: completed, clr: '#10b981' },
+                      { label: 'Failed', value: failed, clr: '#ef4444' },
+                    ].map((st) => (
+                      <Box key={st.label} sx={{
+                        p: 1.2, borderRadius: '10px',
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.04)',
+                        textAlign: 'center',
+                      }}>
+                        <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: st.clr, lineHeight: 1 }}>
+                          {st.value}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.62rem', color: '#334155', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mt: 0.3 }}>
+                          {st.label}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+
+                  {/* Concurrency bar */}
+                  <Box sx={{ mb: 1.5 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography sx={{ fontSize: '0.7rem', color: '#475569', fontWeight: 600 }}>
+                        Concurrency ({running}/{queue.concurrencyLimit})
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700 }}>
+                        {Math.round(usagePct)}%
+                      </Typography>
+                    </Box>
+                    <LinearProgress variant="determinate" value={usagePct} sx={{
+                      height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.05)',
+                      '& .MuiLinearProgress-bar': {
+                        background: usagePct > 80 ? '#ef4444' : `linear-gradient(90deg, ${color}, ${color}80)`,
+                        borderRadius: 3,
+                      },
+                    }} />
+                  </Box>
+
+                  {/* Bottom meta */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1.5, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                    <Box sx={{
+                      px: 1.2, py: 0.3, borderRadius: 6,
+                      background: `${color}12`, border: `1px solid ${color}25`,
+                    }}>
+                      <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color }}>
+                        P{queue.priority}
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: '0.68rem', color: '#334155' }}>
+                      Rate: {queue.rateLimit}/min
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+            );
+          })}
+        </Grid>
       )}
 
       {/* Create dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: '#e2e8f0', fontWeight: 700, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <DialogTitle sx={{ color: '#e2e8f0', fontWeight: 700, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           Create New Queue
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          {error && <Alert severity="error" sx={{ mb: 2, borderRadius: '10px' }}>{error}</Alert>}
+          {error && <Alert severity="error" sx={{ mb: 2, borderRadius: '12px' }}>{error}</Alert>}
           <FormControl fullWidth margin="normal">
             <InputLabel>Project</InputLabel>
             <Select value={formData.projectId} onChange={(e) => setFormData({ ...formData, projectId: e.target.value })} label="Project">
@@ -167,13 +228,13 @@ export default function QueuesPage() {
           </FormControl>
           <TextField fullWidth label="Queue Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} margin="normal" required />
           <TextField fullWidth label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} margin="normal" multiline rows={2} />
-          <Box sx={{ display: 'flex', gap: 2, mt: 0 }}>
+          <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField fullWidth label="Priority (0-10)" type="number" value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })} margin="normal" inputProps={{ min: 0, max: 10 }} />
             <TextField fullWidth label="Concurrency" type="number" value={formData.concurrencyLimit} onChange={(e) => setFormData({ ...formData, concurrencyLimit: parseInt(e.target.value) })} margin="normal" inputProps={{ min: 1 }} />
           </Box>
           <TextField fullWidth label="Rate Limit (jobs/min)" type="number" value={formData.rateLimit} onChange={(e) => setFormData({ ...formData, rateLimit: parseInt(e.target.value) })} margin="normal" inputProps={{ min: 1 }} />
         </DialogContent>
-        <DialogActions sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <DialogActions sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <Button onClick={() => setOpen(false)} sx={{ color: '#64748b' }}>Cancel</Button>
           <Button
             onClick={() => createMutation.mutate({
@@ -181,7 +242,7 @@ export default function QueuesPage() {
               projectId: formData.projectId || (projects.length > 0 ? projects[0].id : 'default-project'),
             })} variant="contained"
             disabled={!formData.name || createMutation.isPending}
-            sx={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)' }}
+            sx={{ background: 'linear-gradient(135deg, #00d4aa, #7c3aed)' }}
           >
             {createMutation.isPending ? 'Creating…' : 'Create Queue'}
           </Button>

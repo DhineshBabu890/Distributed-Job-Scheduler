@@ -16,16 +16,16 @@ const defaultForm = {
 };
 
 const STATUS_STYLES: Record<string, { bg: string; border: string; color: string; label: string }> = {
-  COMPLETED: { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.35)', color: '#10b981', label: 'Completed' },
-  RUNNING: { bg: 'rgba(6,182,212,0.12)', border: 'rgba(6,182,212,0.35)', color: '#06b6d4', label: 'Running' },
-  FAILED: { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.35)', color: '#ef4444', label: 'Failed' },
-  DEAD_LETTER: { bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.25)', color: '#f87171', label: 'Dead' },
-  QUEUED: { bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.25)', color: '#94a3b8', label: 'Queued' },
-  CANCELLED: { bg: 'rgba(100,116,139,0.1)', border: 'rgba(100,116,139,0.2)', color: '#64748b', label: 'Cancelled' },
+  COMPLETED: { bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)', color: '#10b981', label: 'Completed' },
+  RUNNING: { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.3)', color: '#3b82f6', label: 'Running' },
+  FAILED: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', color: '#ef4444', label: 'Failed' },
+  DEAD_LETTER: { bg: 'rgba(239,68,68,0.06)', border: 'rgba(239,68,68,0.2)', color: '#f87171', label: 'Dead' },
+  QUEUED: { bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.2)', color: '#94a3b8', label: 'Queued' },
+  CANCELLED: { bg: 'rgba(100,116,139,0.08)', border: 'rgba(100,116,139,0.15)', color: '#64748b', label: 'Cancelled' },
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  IMMEDIATE: '#7c3aed', DELAYED: '#f59e0b', SCHEDULED: '#3b82f6', RECURRING: '#10b981',
+  IMMEDIATE: '#00d4aa', DELAYED: '#f59e0b', SCHEDULED: '#3b82f6', RECURRING: '#10b981',
 };
 
 export default function JobsPage() {
@@ -70,10 +70,10 @@ export default function JobsPage() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
         <Box>
           <Typography variant="h4" sx={{
-            background: 'linear-gradient(90deg,#e2e8f0,#94a3b8)',
+            background: 'linear-gradient(135deg, #00d4aa, #7c3aed)',
             backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>Jobs</Typography>
-          <Typography sx={{ color: '#475569', fontSize: '0.875rem', mt: 0.5 }}>
+          <Typography sx={{ color: '#334155', fontSize: '0.85rem', mt: 0.5 }}>
             {jobs.length} job{jobs.length !== 1 ? 's' : ''} total — refreshes every 3s
           </Typography>
         </Box>
@@ -81,13 +81,19 @@ export default function JobsPage() {
           <Button
             variant="outlined" startIcon={<Refresh />}
             onClick={() => qc.invalidateQueries({ queryKey: ['jobs'] })}
-            sx={{ borderColor: 'rgba(255,255,255,0.1)', color: '#94a3b8', '&:hover': { borderColor: '#7c3aed', color: '#7c3aed' } }}
+            sx={{
+              borderColor: 'rgba(255,255,255,0.08)', color: '#94a3b8', borderRadius: '12px',
+              '&:hover': { borderColor: '#00d4aa', color: '#00d4aa', background: 'rgba(0,212,170,0.06)' },
+            }}
           >
             Refresh
           </Button>
           <Button
             variant="contained" startIcon={<Add />} onClick={() => setOpen(true)}
-            sx={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', boxShadow: '0 4px 16px rgba(124,58,237,0.4)' }}
+            sx={{
+              background: 'linear-gradient(135deg, #00d4aa, #7c3aed)', borderRadius: '12px',
+              boxShadow: '0 4px 20px rgba(0,212,170,0.3)',
+            }}
           >
             New Job
           </Button>
@@ -96,14 +102,22 @@ export default function JobsPage() {
 
       {jobs.length === 0 && !isLoading ? (
         <Box sx={{
-          py: 8, textAlign: 'center',
-          background: 'rgba(13,17,32,0.5)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)',
+          py: 10, textAlign: 'center', borderRadius: '20px',
+          background: 'rgba(10,14,28,0.6)',
+          border: '1px dashed rgba(255,255,255,0.08)',
+          animation: 'fadeInUp 0.4s ease both',
         }}>
-          <WorkOutline sx={{ fontSize: 48, color: '#334155', mb: 2 }} />
-          <Typography sx={{ color: '#475569' }}>No jobs yet. Create a queue first, then add jobs.</Typography>
+          <WorkOutline sx={{ fontSize: 56, color: '#1e293b', mb: 2 }} />
+          <Typography sx={{ color: '#334155', fontSize: '0.9rem' }}>No jobs yet. Create a queue first, then add jobs.</Typography>
         </Box>
       ) : (
-        <Box sx={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(13,17,32,0.85)' }}>
+        <Box sx={{
+          borderRadius: '18px', overflow: 'hidden',
+          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'rgba(10,14,28,0.9)',
+          backdropFilter: 'blur(12px)',
+          animation: 'fadeInUp 0.4s ease both',
+        }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -117,36 +131,41 @@ export default function JobsPage() {
                 const s = STATUS_STYLES[job.status] || STATUS_STYLES['QUEUED'];
                 const typeColor = TYPE_COLORS[job.type] || '#94a3b8';
                 return (
-                  <TableRow key={job.id}>
+                  <TableRow key={job.id} sx={{
+                    '&:hover': {
+                      background: 'rgba(0,212,170,0.03)',
+                      boxShadow: 'inset 0 0 0 1px rgba(0,212,170,0.08)',
+                    },
+                  }}>
                     <TableCell>
-                      <Typography sx={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.875rem' }}>{job.name}</Typography>
+                      <Typography sx={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.85rem' }}>{job.name}</Typography>
                     </TableCell>
-                    <TableCell sx={{ color: '#64748b', fontSize: '0.8rem' }}>{job.queue?.name || '—'}</TableCell>
+                    <TableCell sx={{ color: '#475569', fontSize: '0.8rem' }}>{job.queue?.name || '—'}</TableCell>
                     <TableCell>
                       <Chip size="small" label={job.type} sx={{
-                        fontWeight: 600, borderRadius: '6px', fontSize: '0.72rem',
-                        background: `${typeColor}18`, color: typeColor, border: `1px solid ${typeColor}35`,
+                        fontWeight: 600, borderRadius: '8px', fontSize: '0.72rem',
+                        background: `${typeColor}12`, color: typeColor, border: `1px solid ${typeColor}28`,
                       }} />
                     </TableCell>
                     <TableCell>
                       <Chip size="small" label={s.label} sx={{
-                        fontWeight: 700, borderRadius: '6px', fontSize: '0.72rem',
+                        fontWeight: 700, borderRadius: '8px', fontSize: '0.72rem',
                         background: s.bg, border: `1px solid ${s.border}`, color: s.color,
                         animation: job.status === 'RUNNING' ? 'running-pulse 1.5s ease-in-out infinite' : 'none',
                       }} />
                     </TableCell>
                     <TableCell>
                       <Box sx={{
-                        display: 'inline-block', px: 1.5, py: 0.2, borderRadius: 6,
-                        background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)',
+                        display: 'inline-block', px: 1.5, py: 0.2, borderRadius: 8,
+                        background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.25)',
                         color: '#9d5ff0', fontWeight: 700, fontSize: '0.78rem',
                       }}>{job.priority}</Box>
                     </TableCell>
                     <TableCell sx={{ color: '#64748b', fontSize: '0.8rem' }}>
                       <span style={{ color: '#94a3b8' }}>{job.attempt}</span>
-                      <span style={{ color: '#334155' }}>/{job.maxAttempts}</span>
+                      <span style={{ color: '#1e293b' }}>/{job.maxAttempts}</span>
                     </TableCell>
-                    <TableCell sx={{ color: '#64748b', fontSize: '0.78rem' }}>
+                    <TableCell sx={{ color: '#475569', fontSize: '0.78rem' }}>
                       {format(new Date(job.createdAt), 'MMM dd, HH:mm:ss')}
                     </TableCell>
                     <TableCell>
@@ -158,9 +177,9 @@ export default function JobsPage() {
                             disabled={retryMutation.isPending}
                             sx={{
                               fontSize: '0.75rem', fontWeight: 700, px: 1.5, py: 0.4,
-                              background: 'rgba(239,68,68,0.12)', color: '#ef4444',
-                              border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px',
-                              '&:hover': { background: 'rgba(239,68,68,0.22)' },
+                              background: 'rgba(239,68,68,0.08)', color: '#ef4444',
+                              border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px',
+                              '&:hover': { background: 'rgba(239,68,68,0.18)' },
                             }}
                           >
                             Retry
@@ -178,11 +197,11 @@ export default function JobsPage() {
 
       {/* Create dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ color: '#e2e8f0', fontWeight: 700, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <DialogTitle sx={{ color: '#e2e8f0', fontWeight: 700, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           Create New Job
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          {error && <Alert severity="error" sx={{ mb: 2, borderRadius: '10px' }}>{error}</Alert>}
+          {error && <Alert severity="error" sx={{ mb: 2, borderRadius: '12px' }}>{error}</Alert>}
           <Box sx={{ display: 'flex', gap: 2 }}>
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Queue</InputLabel>
@@ -218,12 +237,12 @@ export default function JobsPage() {
             sx={{ '& .MuiInputBase-root': { fontFamily: 'monospace', fontSize: '0.8rem' } }}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <DialogActions sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <Button onClick={() => setOpen(false)} sx={{ color: '#64748b' }}>Cancel</Button>
           <Button
             onClick={handleSubmit} variant="contained"
             disabled={!formData.name || !formData.queueId || createMutation.isPending}
-            sx={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)' }}
+            sx={{ background: 'linear-gradient(135deg, #00d4aa, #7c3aed)' }}
           >
             {createMutation.isPending ? 'Creating…' : 'Create Job'}
           </Button>

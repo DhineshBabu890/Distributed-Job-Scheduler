@@ -10,20 +10,21 @@ import DashboardPage from './pages/DashboardPage';
 import QueuesPage from './pages/QueuesPage';
 import JobsPage from './pages/JobsPage';
 import WorkersPage from './pages/WorkersPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import Layout from './components/Layout';
 
 const theme = createTheme({
   palette: {
     mode: 'dark',
-    primary: { main: '#7c3aed', light: '#9d5ff0', dark: '#5b21b6' },
-    secondary: { main: '#06b6d4', light: '#22d3ee', dark: '#0891b2' },
+    primary: { main: '#00d4aa', light: '#33e0be', dark: '#00a886' },
+    secondary: { main: '#7c3aed', light: '#9d5ff0', dark: '#5b21b6' },
     success: { main: '#10b981', light: '#34d399' },
     warning: { main: '#f59e0b', light: '#fbbf24' },
     error: { main: '#ef4444', light: '#f87171' },
     info: { main: '#3b82f6', light: '#60a5fa' },
     background: {
-      default: '#080c18',
-      paper: '#0d1120',
+      default: '#050816',
+      paper: '#0a0e1a',
     },
     text: {
       primary: '#e2e8f0',
@@ -33,24 +34,25 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: "'Inter', sans-serif",
-    h4: { fontWeight: 700, letterSpacing: '-0.5px' },
+    h4: { fontWeight: 800, letterSpacing: '-0.5px' },
     h5: { fontWeight: 700 },
     h6: { fontWeight: 600 },
     button: { fontWeight: 600, textTransform: 'none', letterSpacing: '0.02em' },
   },
-  shape: { borderRadius: 12 },
+  shape: { borderRadius: 14 },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
-          padding: '8px 20px',
-          transition: 'all 0.2s ease',
-          '&:hover': { transform: 'translateY(-1px)', boxShadow: '0 4px 20px rgba(124,58,237,0.35)' },
+          borderRadius: 12,
+          padding: '8px 22px',
+          transition: 'all 0.25s ease',
+          '&:hover': { transform: 'translateY(-1px)' },
         },
         containedPrimary: {
-          background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
-          boxShadow: '0 2px 12px rgba(124,58,237,0.4)',
+          background: 'linear-gradient(135deg, #00d4aa 0%, #7c3aed 100%)',
+          boxShadow: '0 4px 20px rgba(0,212,170,0.3)',
+          '&:hover': { boxShadow: '0 6px 28px rgba(0,212,170,0.45)' },
         },
       },
     },
@@ -58,32 +60,32 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          background: 'rgba(13,17,32,0.85)',
+          background: 'rgba(10,14,28,0.85)',
           border: '1px solid rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(12px)',
+          backdropFilter: 'blur(16px)',
         },
       },
     },
     MuiTableCell: {
       styleOverrides: {
         root: {
-          borderColor: 'rgba(255,255,255,0.06)',
+          borderColor: 'rgba(255,255,255,0.05)',
         },
         head: {
-          background: 'rgba(124,58,237,0.08)',
+          background: 'rgba(0,212,170,0.06)',
           fontWeight: 600,
           color: '#94a3b8',
           fontSize: '0.75rem',
           textTransform: 'uppercase',
-          letterSpacing: '0.05em',
+          letterSpacing: '0.06em',
         },
       },
     },
     MuiTableRow: {
       styleOverrides: {
         root: {
-          transition: 'background 0.15s',
-          '&:hover': { background: 'rgba(124,58,237,0.06)' },
+          transition: 'background 0.2s',
+          '&:hover': { background: 'rgba(0,212,170,0.04)' },
           '&:last-child td': { border: 0 },
         },
       },
@@ -92,31 +94,32 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 10,
-            '& fieldset': { borderColor: 'rgba(255,255,255,0.12)' },
-            '&:hover fieldset': { borderColor: 'rgba(124,58,237,0.5)' },
-            '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
+            borderRadius: 12,
+            '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+            '&:hover fieldset': { borderColor: 'rgba(0,212,170,0.4)' },
+            '&.Mui-focused fieldset': { borderColor: '#00d4aa' },
           },
         },
       },
     },
     MuiChip: {
       styleOverrides: {
-        root: { fontWeight: 600, borderRadius: 6 },
+        root: { fontWeight: 600, borderRadius: 8 },
       },
     },
     MuiDialog: {
       styleOverrides: {
         paper: {
-          background: '#0d1120',
-          border: '1px solid rgba(124,58,237,0.25)',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
+          background: '#0a0e1a',
+          border: '1px solid rgba(0,212,170,0.2)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.7)',
+          borderRadius: 20,
         },
       },
     },
     MuiSelect: {
       styleOverrides: {
-        root: { borderRadius: 10 },
+        root: { borderRadius: 12 },
       },
     },
   },
@@ -152,6 +155,7 @@ function App() {
               <Route path="queues" element={<QueuesPage />} />
               <Route path="jobs" element={<JobsPage />} />
               <Route path="workers" element={<WorkersPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
             </Route>
           </Routes>
         </BrowserRouter>
